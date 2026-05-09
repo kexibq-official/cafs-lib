@@ -1,0 +1,17 @@
+[package]
+name = "cafs"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Cache-aware frequency sort for low-cardinality integer arrays (x86-64 + AVX2)"
+repository = "https://github.com/kexibq-official/cafs-lib"
+authors = ["Vasiliy S. Shlyk <kexibq.official@gmail.com>"]
+readme = "README.md"
+keywords = ["sort", "simd", "avx2", "cache", "performance"]
+categories = ["algorithms", "no-std"]
+
+[lib]
+crate-type = ["lib"]
+
+[build-dependencies]
+cc = "1.0"

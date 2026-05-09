@@ -2,7 +2,13 @@
 
 Cache-aware frequency sort: a header-only C++20 sort for low-cardinality integer arrays on x86-64.
 
-## Usage
+![CAFS speedup over vqsort across the (N, K) grid](figs/heatmap_vs_vqsort.png)
+
+Speedup of CAFS over Google Highway vqsort across the (N, K) grid. Green is CAFS faster, red is vqsort faster. The two-sided boundary at K = 6.7e5 marks the operational crossover. Bench platform: Intel Core i5-12400F, 32 GB DDR4-3200, g++ 13.2 -O3 -mavx2 -mbmi.
+
+CAFS targets integer columns where the number of distinct values K is much smaller than the array length N. The hot loop is one AVX2 cmpeq per element on a 64-byte cache-line bucket; an adaptive dispatcher routes high-entropy inputs to pdqsort. On a 1600-point (N, K) grid (592770 measurements) the bin-mean speedup is 1.7 to 3.1 times pdqsort, 1.97 to 3.52 times IPS4o, 1.27 to 2.34 times vqsort, 4 to 17 times ska_sort, and 8 to 17 times std::sort across the K << N band. Per-baseline crossover points are listed in [Benchmark results](#benchmark-results).
+
+## C++ usage
 
 CAFS is header-only. Include cafs2.hpp and call cafs2::cafs_sort on a std::vector of an integral type.
 
@@ -27,6 +33,30 @@ cafs2::cafs_sort(data, [](auto& v){ pdqsort(v.begin(), v.end()); });
 ```
 
 AVX2 specializations exist for int32_t, int64_t, and uint64_t. Other integral types compile through a scalar bucket path with no loss of correctness.
+
+## Bindings
+
+Thin wrappers in [`bindings/`](bindings/) for Python, Rust, and Go. All three expose a single `sort` entry point that accepts the supported integer types (`uint64`, `int64`, `int32`).
+
+```python
+import numpy as np, cafs
+data = np.random.default_rng(0).integers(0, 1000, size=1_000_000, dtype=np.uint64)
+cafs.sort(data)
+```
+
+```rust
+use cafs::sort;
+let mut data: Vec<u64> = vec![7, 2, 7, 9, 2, 7];
+sort(&mut data);
+```
+
+```go
+import cafs "github.com/kexibq-official/cafs-lib/bindings/go"
+data := []uint64{7, 2, 7, 9, 2, 7}
+cafs.Sort(data)
+```
+
+See [bindings/README.md](bindings/README.md) for installation and per-binding details.
 
 ## Requirements
 
@@ -61,7 +91,24 @@ g++ -O3 -mavx2 -mbmi -std=c++20 -DNDEBUG -Iinclude tests/sanity.cpp -o sanity
 
 ## When to use CAFS
 
-CAFS targets sorting integer columns with low cardinality, where K is the number of distinct values and N is the array length. Typical inputs: categorical fields, foreign keys into small dimension tables, quantized features, and post-group-by intermediate columns. The applicability boundary against vqsort sits at K = 6.7e5 on the test platform; against pdqsort and std::sort the operational crossover sits at K = 1.3e5; against ska_sort at K = 8.1e5; against IPS4o the lead persists to K = N. For inputs with K close to N, vqsort is the better choice; the CAFS dispatcher routes such inputs to pdqsort as a safety fallback.
+Typical inputs that match the target zone:
+
+- categorical fields (status, type, tag, country code, log level)
+- foreign keys into small dimension tables
+- quantized numeric features after bucketing
+- post-group-by intermediate columns in OLAP query plans
+
+Per-baseline operational crossover at N > 1e6:
+
+| Baseline   | CAFS leads up to | Past the crossover                         |
+|------------|------------------|--------------------------------------------|
+| std::sort  | K = N            | CAFS still wins (introsort is the weak baseline) |
+| pdqsort    | K = 1.3e5        | converges to parity                        |
+| IPS4o      | K = N            | converges to parity, no sharp boundary     |
+| ska_sort   | K = 8.1e5        | ska_sort wins on K close to N              |
+| vqsort     | K = 6.7e5        | vqsort wins by 1.5 to 2 times              |
+
+For inputs that may push K close to N, vqsort is the better choice. The CAFS dispatcher catches that case via the `K_est * 2 > N` guard and falls back to pdqsort, capping the worst case observed in the grid at about 5 times pdqsort time.
 
 ## Benchmark results
 

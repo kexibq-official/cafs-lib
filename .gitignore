@@ -36,3 +36,16 @@ results.csv
 results_*.csv
 analysis.txt
 *.tsv
+
+# Python
+__pycache__/
+*.pyc
+*.pyd
+*.egg-info/
+.pytest_cache/
+dist/
+wheelhouse/
+
+# Rust
+target/
+Cargo.lock
