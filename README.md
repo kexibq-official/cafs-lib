@@ -17,6 +17,12 @@ Speedup of CAFS over each baseline across the (N, K) grid. Green is CAFS faster,
 
 CAFS targets integer columns where the number of distinct values K is much smaller than the array length N. The hot loop is one AVX2 cmpeq per element on a 64-byte cache-line bucket; an adaptive dispatcher routes high-entropy inputs to pdqsort. On a 1600-point (N, K) grid (592770 measurements) the bin-mean speedup is 1.7 to 3.1 times pdqsort, 1.97 to 3.52 times IPS4o, 1.27 to 2.34 times vqsort, 4 to 17 times ska_sort, and 8 to 17 times std::sort across the K << N band. Per-baseline crossover points are listed in [Benchmark results](#benchmark-results).
 
+## Demo
+
+![CAFS sorting N=256, K=8 in four stages](tools/sos/examples/cafs_demo.gif)
+
+The four stages: Chao1 sample, hot loop (one bucket update per element), reconstruct (collect pairs, sort by key), and emit (`fill_n` paints the output left to right). Sound version with one tone per bucket update is at [`tools/sos/examples/cafs_demo.mp4`](tools/sos/examples/cafs_demo.mp4). Reproduce or change inputs through [`tools/sos/`](tools/sos/).
+
 ## C++ usage
 
 CAFS is header-only. Include cafs2.hpp and call cafs2::cafs_sort on a std::vector of an integral type.

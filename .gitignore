@@ -49,3 +49,8 @@ wheelhouse/
 # Rust
 target/
 Cargo.lock
+
+# Sound-of-sorting build artifacts
+tools/sos/render/
+tools/sos/sos_trace
+tools/sos/sos_trace.exe
