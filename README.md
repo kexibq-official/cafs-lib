@@ -2,9 +2,18 @@
 
 Cache-aware frequency sort: a header-only C++20 sort for low-cardinality integer arrays on x86-64.
 
-![CAFS speedup over vqsort across the (N, K) grid](figs/heatmap_vs_vqsort.png)
+<table>
+  <tr>
+    <td align="center"><img src="figs/heatmap_vs_vqsort.png" width="460" alt="vs vqsort"/><br/><sub><b>vs vqsort</b> (Google Highway). Crossover at K = 6.7e5.</sub></td>
+    <td align="center"><img src="figs/heatmap_vs_ips4o.png" width="460" alt="vs IPS4o"/><br/><sub><b>vs IPS4o</b>. Lead persists to K close to N.</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="figs/heatmap_vs_pdqsort.png" width="460" alt="vs pdqsort"/><br/><sub><b>vs pdqsort</b>. Crossover at K = 1.3e5.</sub></td>
+    <td align="center"><img src="figs/heatmap_vs_ska_sort.png" width="460" alt="vs ska_sort"/><br/><sub><b>vs ska_sort</b>. Crossover at K = 8.1e5.</sub></td>
+  </tr>
+</table>
 
-Speedup of CAFS over Google Highway vqsort across the (N, K) grid. Green is CAFS faster, red is vqsort faster. The two-sided boundary at K = 6.7e5 marks the operational crossover. Bench platform: Intel Core i5-12400F, 32 GB DDR4-3200, g++ 13.2 -O3 -mavx2 -mbmi.
+Speedup of CAFS over each baseline across the (N, K) grid. Green is CAFS faster, red is the competitor faster. The dashed line traces parity. Bench platform: Intel Core i5-12400F, 32 GB DDR4-3200, g++ 13.2 -O3 -mavx2 -mbmi.
 
 CAFS targets integer columns where the number of distinct values K is much smaller than the array length N. The hot loop is one AVX2 cmpeq per element on a 64-byte cache-line bucket; an adaptive dispatcher routes high-entropy inputs to pdqsort. On a 1600-point (N, K) grid (592770 measurements) the bin-mean speedup is 1.7 to 3.1 times pdqsort, 1.97 to 3.52 times IPS4o, 1.27 to 2.34 times vqsort, 4 to 17 times ska_sort, and 8 to 17 times std::sort across the K << N band. Per-baseline crossover points are listed in [Benchmark results](#benchmark-results).
 
