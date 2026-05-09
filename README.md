@@ -19,9 +19,9 @@ CAFS targets integer columns where the number of distinct values K is much small
 
 ## Demo
 
-![CAFS sorting N=256, K=8 in four stages](tools/sos/examples/cafs_demo.gif)
+![CAFS sort visualization (N=256, K=8)](tools/sos/examples/cafs_demo.gif)
 
-The four stages: Chao1 sample, hot loop (one bucket update per element), reconstruct (collect pairs, sort by key), and emit (`fill_n` paints the output left to right). Sound version with one tone per bucket update is at [`tools/sos/examples/cafs_demo.mp4`](tools/sos/examples/cafs_demo.mp4). Reproduce or change inputs through [`tools/sos/`](tools/sos/).
+The four stages: Chao1 sample with live `f1` / `f2` spectrum and formula step by step, hot loop with one AVX2 cmpeq per element routed by hash through 16 buckets, reconstruct that drains buckets cell by cell into a sorted pair tape, emit that runs `fill_n` for each pair. Source in [tools/sos/](tools/sos/).
 
 ## C++ usage
 
