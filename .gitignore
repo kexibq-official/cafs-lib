@@ -1,0 +1,38 @@
+# Build output
+build/
+out/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dll
+*.dylib
+*.exe
+*.exp
+*.pdb
+*.ilk
+
+# Editors and IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Compiler caches and tooling
+.cache/
+.ccache/
+compile_commands.json
+
+# Benchmark output
+results.csv
+results_*.csv
+analysis.txt
+*.tsv
